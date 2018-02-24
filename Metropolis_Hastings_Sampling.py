@@ -60,7 +60,7 @@ def sample_from_proposal(mu, std, no_samples = 1):
 def main():
 
     # define the number of samples
-    n = 2000
+    n = 10000
     # define standard deviation
     std = 10.0
 
@@ -73,22 +73,60 @@ def main():
     for i in range(n):
 
         # produce some status output
-    if i % 200 == 0:
-        print('Running iteration ', n)
+        if i % 200 == 0:
+            print('Running iteration ', i)
 
-    # draw samples from the proposal distribution
-    x = sample_from_proposal(x_old, std)  # take one sample from proposal distribution
+        # draw samples from the proposal distribution
+        x = sample_from_proposal(x_old, std)  # take one sample from proposal distribution
 
-    # generate random number from uniform distribution
-    z = np.random.uniform(0, 1.0, 1)  # one random number from a normal distribution with mean 0 and std 1
+        # generate random number from uniform distribution
+        z = np.random.uniform(0, 1.0, 1)  # one random number from a normal distribution with mean 0 and std 1
 
-    # define A which is the threshold for z
-    fraction_a = eval_target(x) * eval_proposal(x_old, x , std)
-    a = min(1.0, fraction_a)
+        # define A which is the threshold for z
+        fraction_a = eval_target(x) * eval_proposal(x_old, x, std)
+        a = min(1.0, fraction_a)
 
-    # accept or reject new sample
-    if z < A:
-        samples.append(x)
-        x_old = x  # update the previous value of x_0, which is the first value in the markov chain
-        accepted += 1  # add 1 to the total number of samples accepted
+        # accept or reject new sample
+        if z < a:
+            samples.append(x)
+            x_old = x  # update the previous value of x_0, which is the first value in the markov chain
+            accepted += 1  # add 1 to the total number of samples accepted
+        else:
+            samples.append(x_old)  # take the old value if rejected
+
+    # print the state
+    acceptance_rate = (accepted / n) * 100
+    print('The Acceptance Rate is ', acceptance_rate)
+
+    # show actual target distribution using a plot
+    state_space = np.linspace(0, 100, 10000)
+    p_x = eval_target(state_space)
+
+    fig = plt.figure()
+    ax1 = fig.add_subplot(121, projection='3d')
+    ax1.plot(n * np.ones(len(state_space)), state_space, p_x, linewidth=2.0, label='Actual Distribution p(x)')
+    ax1.plot(range(n), samples, np.zeros(n), label='Samples Drawn')
+    ax1.set_xlabel('Sample Numer')
+    ax1.set_ylabel('State Space (x)')
+    ax1.set_zlabel('p(x)')
+    ax1.legend()
+
+    ax2 = fig.add_subplot(122)
+    ax2.plot(state_space, p_x, linewidth=2.0, label='Actual Distribution p(x)')
+    ax2.hist(samples, 50, normed=1, alpha=0.75, label='Sampled Distribution p(x)')
+    ax2.set_xlabel('State Space (x)')
+    ax2.set_ylabel('p(x)')
+    ax2.legend()
+
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+
+
 

@@ -41,7 +41,7 @@ def main():
     k = 8
 
     # Number of samples to be drawn
-    N = 200000
+    N = 10000
 
     # Perform N rounds of rejection sampling - leading to a lower number of accepted points
     x = []
